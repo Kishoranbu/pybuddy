@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyBuddy Junior Web</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --bg-card: #1e1e1e;
+            --text-primary: #e0e0e0;
+            --text-secondary: #b0b0b0;
+            --accent: #4caf50;
+            --accent-hover: #66bb6a;
+            --transition: 0.3s;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Roboto', sans-serif; background: var(--bg-dark); color: var(--text-primary); }
+        header { background: var(--bg-card); padding: 2rem; text-align: center; font-size: 1.8rem; font-weight: 500; color: var(--accent); box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        nav { display: flex; justify-content: space-around; background: var(--bg-card); padding: 0.5rem 0; box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        nav button { background: none; border: none; color: var(--text-secondary); font-size: 1rem; font-weight: 500; cursor: pointer; padding: 0.5rem 1rem; transition: color var(--transition); }
+        nav button.active, nav button:hover { color: var(--accent); }
+        .screen { display: none; padding: 2rem; }
+        .screen.active { display: block; }
+        h2 { margin-bottom: 1rem; color: var(--accent); }
+        .card { background: var(--bg-card); border-radius: 8px; padding: 1rem; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.5); transition: transform var(--transition), box-shadow var(--transition); }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 4px 8px rgba(0,0,0,0.7); }
+        .lesson-card { cursor: pointer; display: flex; flex-direction: column; padding: 1rem; }
+        .lesson-card strong { font-size: 1.2rem; color: var(--text-primary); margin-bottom: 0.5rem; }
+        .lesson-card span { font-size: 1rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
+        .lesson-card small { font-size: 0.85rem; color: var(--text-secondary); }
+        .quiz-section { display: grid; gap: 1rem; }
+        .question { font-size: 1.2rem; margin-bottom: 0.5rem; }
+        .options { display: grid; gap: 0.5rem; }
+        .options button { background: var(--bg-card); border: 2px solid var(--accent); border-radius: 6px; padding: 0.75rem; color: var(--text-primary); font-size: 1rem; cursor: pointer; transition: background var(--transition), transform var(--transition); }
+        .options button:hover { background: var(--accent-hover); transform: translateY(-2px); }
+        .chatbox { margin-bottom: 1rem; }
+        #chat-messages { max-height: 300px; overflow-y: auto; margin-bottom: 1rem; }
+        #chat-messages .chatbox { background: var(--bg-card); padding: 0.75rem; border-radius: 6px; }
+        #chat-messages .chatbox.user { border-left: 4px solid var(--accent); }
+        #chat-messages .chatbox.bot { border-left: 4px solid var(--text-secondary); }
+        input, button.send-btn { padding: 0.75rem; border-radius: 6px; border: none; font-size: 1rem; }
+        input { flex: 1; margin-right: 0.5rem; background: var(--bg-card); color: var(--text-primary); }
+        button.send-btn { background: var(--accent); color: #000; cursor: pointer; transition: background var(--transition); }
+        button.send-btn:hover { background: var(--accent-hover); }
+        .progress-box { display: grid; gap: 0.5rem; }
+        iframe.intro { width: 100%; max-width: 800px; height: 450px; border: none; margin-top: 1rem; }
+    </style>
+</head>
+<body>
+    <header>🐍 Welcome to PyBuddy Junior</header>
+    <nav>
+        <button class="tab active" data-tab="home">🏠 Home</button>
+        <button class="tab" data-tab="learn">📘 Learn</button>
+        <button class="tab" data-tab="practice">🧩 Practice</button>
+        <button class="tab" data-tab="chatbot">🤖 Chatbot</button>
+        <button class="tab" data-tab="progress">📊 Progress</button>
+    </nav>
+
+    <div id="home" class="screen active">
+        <h2>About PyBuddy Junior</h2>
+        <div class="card">
+            <p>PyBuddy Junior is an intuitive web platform designed to teach Python through interactive content.</p>
+            <p><strong>How to Use:</strong></p>
+            <ol>
+                <li><strong>Home:</strong> Get an overview of features and navigation tips.</li>
+                <li><strong>Learn:</strong> Explore detailed lesson notes and watch tutorial videos.</li>
+                <li><strong>Practice:</strong> Test your knowledge with multiple-choice quizzes.</li>
+                <li><strong>Chatbot:</strong> Ask for explanations, code snippets, and debugging help.</li>
+                <li><strong>Progress:</strong> Track completed lessons and quiz scores.</li>
+            </ol>
+            <p>Start by clicking <em>Learn</em> to dive into your first topic!</p>
+        </div>
+    </div>
+
+    <div id="learn" class="screen">
+        <h2>Python Lessons</h2>
+        <div id="lessons" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;"></div>
+    </div>
+
+    <div id="practice" class="screen">
+        <h2>Quiz & Puzzles</h2>
+        <div class="quiz-section">
+            <div class="card">
+                <div id="quiz-question" class="question"></div>
+                <div id="quiz-options" class="options"></div>
+                <button onclick="nextQuestion()" class="send-btn" style="margin-top:1rem;">Next</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="chatbot" class="screen">
+        <h2>Ask PyBuddy</h2>
+        <div id="chat-messages"></div>
+        <div style="display:flex; gap:0.5rem;">
+            <input type="text" id="chat-input" placeholder="Ask about Python...">
+            <button class="send-btn" onclick="sendChat()">Send</button>
+        </div>
+    </div>
+
+    <div id="progress" class="screen">
+        <h2>Your Progress</h2>
+        <div class="progress-box card">
+            <p>Lessons: <span id="lesson-progress">0</span>/8</p>
+            <p>Quizzes: <span id="quiz-progress">0</span>+</p>
+        </div>
+    </div>
+
+    <script>
+        const tabs = document.querySelectorAll('.tab');
+        const screens = document.querySelectorAll('.screen');
+        tabs.forEach(tab => tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            screens.forEach(s => s.classList.remove('active'));
+            document.getElementById(tab.dataset.tab).classList.add('active');
+            if (tab.dataset.tab === 'learn') loadLessons();
+            if (tab.dataset.tab === 'practice') loadQuiz();
+            if (tab.dataset.tab === 'progress') updateProgress();
+        }));
+
+        const lessons = [
+            { title: 'Variables', brief: 'Store and name data values.', contentNote: 'Variables allow you to store data using the syntax <code>x = 5</code>. They can hold numbers, text, or more complex types.', video: 'https://www.youtube.com/embed/ohCDWZgNIU0' },
+            { title: 'Data Types', brief: 'Understand Python types.', contentNote: 'Python supports types like <code>int</code>, <code>float</code>, <code>str</code>, <code>list</code>, <code>dict</code>, and more. Each type has specific methods and uses.', video: 'https://www.youtube.com/embed/U4ogK0MIzqk' },
+            { title: 'Strings', brief: 'Work with text.', contentNote: 'Strings are sequences of characters. You can manipulate them with methods like <code>.upper()</code>, <code>.split()</code>, and use f-strings for formatting.', video: 'https://www.youtube.com/embed/k9TUPpGqYTo' },
+            { title: 'Lists & Tuples', brief: 'Collections of items.', contentNote: 'Lists are mutable sequences defined with <code>[]</code>, while tuples are immutable, defined with <code>()</code>. Use lists for changeable data and tuples for fixed collections.', video: 'https://www.youtube.com/embed/W8KRzm-HUcc' },
+            { title: 'Dictionaries', brief: 'Key-value storage.', contentNote: 'Dictionaries map unique keys to values. Defined with <code>{}</code>, they allow fast lookup and storage of related data.', video: 'https://www.youtube.com/embed/daefaLgNkw0' },
+            { title: 'Control Flow', brief: 'Branching logic.', contentNote: 'Use <code>if</code>, <code>elif</code>, and <code>else</code> to execute code based on conditions. Loop with <code>for</code> and <code>while</code> for repetition.', video: 'https://www.youtube.com/embed/EnSu9hHGq5o' },
+            { title: 'Functions', brief: 'Reusable code blocks.', contentNote: 'Define functions with <code>def</code> to encapsulate logic. Functions can accept parameters and return values.', video: 'https://www.youtube.com/embed/9Os0o3wzS_I' },
+            { title: 'File I/O', brief: 'Read and write files.', contentNote: 'Perform file operations with <code>open()</code>. Read, write, and close files, and use context managers for safe handling.', video: 'https://www.youtube.com/embed/U_hqBoD4N-4' }
+        ];
+        let lessonsCompleted = 0;
+        function loadLessons() {
+            const container = document.getElementById('lessons'); container.innerHTML = '';
+            lessons.forEach((lesson, i) => {
+                const card = document.createElement('div'); card.className = 'card lesson-card';
+                card.innerHTML = `<strong>${lesson.title}</strong><span>${lesson.brief}</span><small>${lesson.contentNote}</small>`;
+                card.onclick = () => {
+                    const detail = window.open('', '_blank', 'width=700,height=500');
+                    detail.document.write(`
+                        <body style="background:var(--bg-dark);color:var(--text-primary);font-family:Roboto;padding:1rem;">
+                        <h3>${lesson.title}</h3>
+                        ${lesson.contentNote}
+                        <iframe width="100%" height="315" src="${lesson.video}" frameborder="0" allowfullscreen></iframe>
+                        </body>
+                    `);
+                    if (!lesson.completed) { lesson.completed = true; lessonsCompleted = lessons.filter(l => l.completed).length; document.getElementById('lesson-progress').innerText = lessonsCompleted; }
+                };
+                container.appendChild(card);
+            });
+        }
+
+        const quizQuestions = [
+            { question: 'What does "print()" do?', options: ['Outputs text','Inputs text','Creates a variable','Deletes data'], answer: 0 },
+            { question: 'Declare a list with?', options: ['{}','[]','<>','()'], answer: 1 },
+            { question: 'Start function syntax?', options: ['func','def','function','fun'], answer: 1 },
+            { question: 'Which keyword reads a file?', options: ['read()','open()','file()','load()'], answer: 1 },
+            { question: 'Loop over a range?', options: ['for i to 5','for i in range(5)','loop(5)','while i<5'], answer: 1 },
+            { question: 'Check equality?', options: ['=','==','===','equal'], answer: 1 }
+        ];
+        let currentQuiz = 0, quizCompleted = 0;
+        function loadQuiz() {
+            const q = quizQuestions[currentQuiz];
+            document.getElementById('quiz-question').innerText = q.question;
+            const opts = document.getElementById('quiz-options'); opts.innerHTML = '';
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button'); btn.innerText = opt;
+                btn.onclick = () => {
+                    if (idx === q.answer) { quizCompleted++; document.getElementById('quiz-progress').innerText = quizCompleted; alert('Correct!'); } else alert('Wrong');
+                };
+                opts.appendChild(btn);
+            });
+        }
+        function nextQuestion() { currentQuiz = (currentQuiz + 1) % quizQuestions.length; loadQuiz(); }
+
+        function sendChat() {
+            const inp = document.getElementById('chat-input'), msg = inp.value.trim(); if (!msg) return;
+            const box = document.getElementById('chat-messages');
+            ['You: ' + msg, 'PyBuddy: ' + (msg.toLowerCase().includes('file') ? 'Use open() for File I/O' : 'Ask about topics.')]
+            .forEach((t, i) => { const d = document.createElement('div'); d.className = 'chatbox ' + (i ? 'bot' : 'user'); d.innerText = t; box.appendChild(d); });
+            inp.value = ''; box.scrollTop = box.scrollHeight;
+        }
+
+        function updateProgress() { document.getElementById('lesson-progress').innerText = lessonsCompleted; document.getElementById('quiz-progress').innerText = quizCompleted; }
+
+        // Init
+        loadLessons(); loadQuiz();
+    </script>
+</body>
+</html>
